@@ -45,11 +45,35 @@ int main(int argc, char** argv){
     ros::Rate rate(0.5);
     while((ros::ok()) && (i < it)){
         ros::spinOnce();
-        publishCloud(&multi_session.pubCentralGlobalMap, multi_session.centralMap_, multi_session.publishTimeStamp, "camera_init");
-        publishCloud(&multi_session.pubCentralTrajectory, multi_session.traj_central, multi_session.publishTimeStamp, "camera_init");
-        publishCloud(&multi_session.pubRegisteredTrajectory, multi_session.traj_regis, multi_session.publishTimeStamp, "camera_init");
+        // 中央会话地图：红色
+        publishColoredCloud(&multi_session.pubCentralGlobalMap,
+                    multi_session.centralMap_,
+                    multi_session.publishTimeStamp,
+                    "camera_init",
+                    /*r=*/255, /*g=*/60, /*b=*/60);
+
+        // 中央会话轨迹：红色
+        publishColoredCloud(&multi_session.pubCentralTrajectory,
+                    multi_session.traj_central,
+                    multi_session.publishTimeStamp,
+                    "camera_init",
+                    /*r=*/255, /*g=*/60, /*b=*/60);
+
+        // 源/注册轨迹：蓝色
+        publishColoredCloud(&multi_session.pubRegisteredTrajectory,
+                    multi_session.traj_regis,
+                    multi_session.publishTimeStamp,
+                    "camera_init",
+                    /*r=*/60, /*g=*/120, /*b=*/255);
+
         multi_session.visualizeLoopClosure();
-        publishCloud(&multi_session.pubReloCloud, multi_session.reloKeyFrames[i].second.all_cloud, multi_session.publishTimeStamp, "camera_init");
+
+        // 当前重定位关键帧：绿色（可选）
+        publishColoredCloud(&multi_session.pubReloCloud,
+                    multi_session.reloKeyFrames[i].second.all_cloud,
+                    multi_session.publishTimeStamp,
+                    "camera_init",
+                    /*r=*/80, /*g=*/220, /*b=*/120);
         std::cout << "relo name(Idx): " << multi_session.reloKeyFrames[i].first << " target  name(Idx): " << multi_session.reloKeyFrames[i].second.reloTargetIdx
                             << " score: " << multi_session.reloKeyFrames[i].second.reloScore << std::endl; 
         i ++;
