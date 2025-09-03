@@ -590,6 +590,36 @@ sensor_msgs::PointCloud2 publishCloud(ros::Publisher *thisPub, pcl::PointCloud<P
     return tempCloud;
 }
 
+// 发布“纯色”的点云（将任意 PointType 转成 PointXYZRGB 再发布，便于 RViz 按 RGB 着色）
+inline sensor_msgs::PointCloud2 publishColoredCloud(
+    ros::Publisher* pub,
+    const pcl::PointCloud<PointType>::Ptr& in_cloud,
+    const ros::Time& stamp,
+    const std::string& frame_id,
+    uint8_t r, uint8_t g, uint8_t b)
+{
+    // 转成带 RGB 的点云类型
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored(new pcl::PointCloud<pcl::PointXYZRGB>());
+    colored->reserve(in_cloud->size());
+    for (const auto& p : in_cloud->points)
+    {
+        pcl::PointXYZRGB q;
+        q.x = p.x; q.y = p.y; q.z = p.z;
+        q.r = r; q.g = g; q.b = b;
+        colored->push_back(q);
+    }
+
+    sensor_msgs::PointCloud2 msg;
+    pcl::toROSMsg(*colored, msg);
+    msg.header.stamp = stamp;
+    msg.header.frame_id = frame_id;
+
+    if (pub->getNumSubscribers() != 0)
+        pub->publish(msg);
+
+    return msg;
+}
+
 // read bin
 void readBin(std::string _bin_path, pcl::PointCloud<PointType>::Ptr _pcd_ptr)
 {
